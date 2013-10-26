@@ -1,0 +1,11 @@
+/* Mux (multiplexor) gate:
+   if sel=0 out=a else out=b. */
+CHIP Mux {
+    IN a, b, sel;
+    OUT out;
+    PARTS:
+    Not(in=sel, out=notsel);
+    And(a=a, b=notsel, out=wanotsel);
+    And(a=b, b=sel, out=wbsel);
+    Or(a=wanotsel, b=wbsel, out=out);
+}

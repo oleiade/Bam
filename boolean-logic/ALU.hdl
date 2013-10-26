@@ -1,0 +1,46 @@
+CHIP ALU {
+    IN  x[16],
+        y[16],
+        zx,
+        nx,
+        zy,
+        ny,
+        f,
+        no;
+
+    OUT out[16],
+        zr,
+        ng;
+
+    PARTS:
+        // Zero x (zx bit)
+        Mux16(a=x, b=false, sel=zx, out=zxOut);
+
+        // Negate x (nx bit)
+        Not16(in=zxOut, out=notX);
+        Mux16(a=zxOut, b=notX, sel=nx, out=nxOut);
+
+        // Zero y (zy bit)
+        Mux16(a=y, b=false, sel=zy, out=zyOut);
+
+        // Negate y (ny bit)
+        Not16(in=zyOut, out=notY);
+        Mux16(a=zyOut, b=notY, sel=ny, out=nyOut);
+
+        // Compute f bit operation
+        And16(a=nxOut, b=nyOut, out=andXY);  // x & y
+        Add16(a=nxOut, b=nyOut, out=addXY);  // x + y
+        Mux16(a=andXY, b=addXY, sel=f, out=fXY);
+
+        // Compute no bit operation
+        Not16(in=fXY, out=notOut);
+        Mux16(a=fXY, b=notOut, sel=no, out=final);  // Make sure to output a final value to ba manipulated
+        Mux16(a=final, b=false, sel=false, out=out);  // Make an always valid Mux to copy the output in a new value
+
+        // Compute the zr bit
+        Or16Way(in=final, out=zrOut);
+        Not(in=zrOut, out=zr);
+
+        // Compute the ng bit
+        IsNeg(in=final, out=ng);
+}
